@@ -158,17 +158,49 @@ else:
 
 
 
-# Make predictions on the preprocessed images
-predictions = []
+# Define the path to the prediction images
+prediction_path = 'seg_pred'
+
+# Initialize lists to store images and their corresponding labels
+prediction_images = []
 true_labels = []
 
+# Iterate over the folders in the prediction directory
+class_names = os.listdir(prediction_path)
+for class_name in class_names:
+    class_path = os.path.join(prediction_path, class_name)
+    if os.path.isdir(class_path):
+        # Get the class label from the folder name
+        true_label = class_names.index(class_name)
+        # Iterate over the images in the folder
+        for file_name in os.listdir(class_path):
+            # Load the image and append it to the list of images
+            image_path = os.path.join(class_path, file_name)
+            image = Image.open(image_path).convert('RGB')  # Ensure images are RGB
+            prediction_images.append(image)
+            # Append the true label to the list of true labels
+            true_labels.append(true_label)
+
+# Print the true labels list
+print("True labels:", true_labels)
+
+# Define transformations for image preprocessing
+transform = transforms.Compose([
+    transforms.Resize((150, 150)),
+    transforms.ToTensor(),
+])
+
+# Preprocess input images and convert them to tensors
+preprocessed_images = [transform(image).unsqueeze(0) for image in prediction_images]
+
+# Make predictions on the preprocessed images
+predictions = []
 model.eval()
 with torch.no_grad():
-    for data, labels in test_loader:
-        true_labels.append(labels.item())  # Append the true label to the list of true labels
-
+    for image_tensor in preprocessed_images:
         # Extract features using feature extractor (if applicable)
-        features = feature_extractor(data)
+        features = feature_extractor(image_tensor)  # Assuming you have a feature extractor
+
         # Construct graph
         graph = construct_graph(features)
 
@@ -183,9 +215,12 @@ with torch.no_grad():
         
         predictions.append(pred)
 
+# Print the predictions list
+print("Predictions:", predictions)
+
 # Compare predicted classes with true labels
 correct_predictions = sum(pred == true_label for pred, true_label in zip(predictions, true_labels))
-total_predictions = len(test_dataset)
+total_predictions = len(prediction_images)
 accuracy = correct_predictions / total_predictions
 print("Accuracy:", accuracy)
 
