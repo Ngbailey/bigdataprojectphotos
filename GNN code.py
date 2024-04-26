@@ -197,6 +197,16 @@ label_counts = {label: predictions.count(label) for label in set(predictions)}
 # Calculate the total number of predictions
 total_predictions = len(predictions)
 
+# Define the mapping dictionary for numerical labels to class names
+label_to_class = {0: 'buildings', 1: 'forest', 2: 'glacier', 3: 'mountain', 4: 'sea', 5: 'street'}
+
+# Convert numerical labels to class names in predictions
+class_predictions = [label_to_class[label] for label in predictions]
+
+# Print the predictions with class names
+print("Predictions:", class_predictions)
+
+
 # Print the label distribution
 print("Label distribution:")
 for label, count in label_counts.items():
@@ -206,7 +216,6 @@ for label, count in label_counts.items():
 most_frequent_label = max(label_counts, key=label_counts.get)
 print("Most frequent predicted label:", most_frequent_label)
 
-# Calculate the accuracy of the most frequent predicted label
-accuracy = label_counts[most_frequent_label] / total_predictions
-print("Accuracy based on most frequent predicted label:", accuracy)
+
+
 
