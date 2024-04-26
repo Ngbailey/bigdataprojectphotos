@@ -166,7 +166,7 @@ elapsed_time = end_time - start_time
 print("Elapsed time:", elapsed_time, "seconds")
 
 # Make predictions on unlabeled data (prediction images)
-prediction_path = 'seg_pred'
+prediction_path = 'seg_pred/seg_pred'
 prediction_images = []
 
 # Iterate over the files in the prediction directory
