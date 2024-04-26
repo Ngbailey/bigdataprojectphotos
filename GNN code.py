@@ -161,9 +161,10 @@ else:
 # Define the path to the prediction images
 prediction_path = 'seg_pred'
 
-# Initialize lists to store images and their corresponding labels
+# Initialize lists to store images, their corresponding labels, predicted classes, and true classes
 prediction_images = []
 true_labels = []
+predicted_classes = []
 
 # Iterate over the folders in the prediction directory
 class_names = os.listdir(prediction_path)
@@ -194,7 +195,7 @@ preprocessed_images = [transform(image).unsqueeze(0) for image in prediction_ima
 predictions = []
 model.eval()
 with torch.no_grad():
-    for image_tensor in preprocessed_images:
+    for image_tensor, true_label in zip(preprocessed_images, true_labels):
         # Extract features using feature extractor (if applicable)
         features = feature_extractor(image_tensor)  # Assuming you have a feature extractor
 
@@ -211,10 +212,15 @@ with torch.no_grad():
             pred = output.argmax(dim=-1).item()  # Apply argmax along the last dimension
         
         predictions.append(pred)
+        predicted_classes.append(class_names[pred])
 
 # Compare predicted classes with true labels
 correct_predictions = sum(pred == true_label for pred, true_label in zip(predictions, true_labels))
 total_predictions = len(prediction_images)
 accuracy = correct_predictions / total_predictions
-print("Accuracy:", accuracy)
+print("Accuracy on test set:", accuracy)
 
+# Print predicted and true classes for each image
+print("Predicted classes and true classes:")
+for predicted_class, true_class in zip(predicted_classes, true_labels):
+    print(f"Predicted: {predicted_class}, True: {class_names[true_class]}")
