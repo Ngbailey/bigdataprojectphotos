@@ -158,23 +158,11 @@ else:
 
 
 
-# Initialize lists to store images and their corresponding labels
-test_images = []
-true_labels = []
-
-# Iterate over the test dataset
-for class_label, (image, label) in enumerate(test_dataset):
-    test_images.append(image)
-    true_labels.append(label)
-
-# Preprocess input images and convert them to tensors
-preprocessed_images = [transform(image).unsqueeze(0) for image in test_images]
-
 # Make predictions on the preprocessed images
 predictions = []
 model.eval()
 with torch.no_grad():
-    for image_tensor in preprocessed_images:
+    for image_tensor in test_dataset:
         # Extract features using feature extractor (if applicable)
         features = feature_extractor(image_tensor)  # Assuming you have a feature extractor
 
@@ -194,6 +182,6 @@ with torch.no_grad():
 
 # Compare predicted classes with true labels
 correct_predictions = sum(pred == true_label for pred, true_label in zip(predictions, true_labels))
-total_predictions = len(test_images)
+total_predictions = len(test_dataset)
 accuracy = correct_predictions / total_predictions
 print("Accuracy:", accuracy)
