@@ -160,12 +160,15 @@ else:
 
 # Make predictions on the preprocessed images
 predictions = []
+true_labels = []
+
 model.eval()
 with torch.no_grad():
-    for image_tensor in test_dataset:
-        # Extract features using feature extractor (if applicable)
-        features = feature_extractor(image_tensor)  # Assuming you have a feature extractor
+    for data, labels in test_loader:
+        true_labels.append(labels.item())  # Append the true label to the list of true labels
 
+        # Extract features using feature extractor (if applicable)
+        features = feature_extractor(data)
         # Construct graph
         graph = construct_graph(features)
 
@@ -185,3 +188,4 @@ correct_predictions = sum(pred == true_label for pred, true_label in zip(predict
 total_predictions = len(test_dataset)
 accuracy = correct_predictions / total_predictions
 print("Accuracy:", accuracy)
+
