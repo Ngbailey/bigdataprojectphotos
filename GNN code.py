@@ -161,14 +161,12 @@ else:
 # Define the path to the prediction images
 prediction_path = 'seg_pred'
 
-# Initialize lists to store images, their corresponding labels, predicted classes, and true classes
+# Initialize lists to store images and their corresponding labels
 prediction_images = []
 true_labels = []
-predicted_classes = []
 
 # Iterate over the folders in the prediction directory
 class_names = os.listdir(prediction_path)
-print("Class names:", class_names)  # Print class names to check if they're loaded correctly
 for class_name in class_names:
     class_path = os.path.join(prediction_path, class_name)
     if os.path.isdir(class_path):
@@ -183,6 +181,9 @@ for class_name in class_names:
             # Append the true label to the list of true labels
             true_labels.append(true_label)
 
+# Print the true labels list
+print("True labels:", true_labels)
+
 # Define transformations for image preprocessing
 transform = transforms.Compose([
     transforms.Resize((150, 150)),
@@ -196,7 +197,7 @@ preprocessed_images = [transform(image).unsqueeze(0) for image in prediction_ima
 predictions = []
 model.eval()
 with torch.no_grad():
-    for image_tensor, true_label in zip(preprocessed_images, true_labels):
+    for image_tensor in preprocessed_images:
         # Extract features using feature extractor (if applicable)
         features = feature_extractor(image_tensor)  # Assuming you have a feature extractor
 
@@ -213,15 +214,12 @@ with torch.no_grad():
             pred = output.argmax(dim=-1).item()  # Apply argmax along the last dimension
         
         predictions.append(pred)
-        predicted_classes.append(class_names[pred])
+
+# Print the predictions list
+print("Predictions:", predictions)
 
 # Compare predicted classes with true labels
 correct_predictions = sum(pred == true_label for pred, true_label in zip(predictions, true_labels))
 total_predictions = len(prediction_images)
 accuracy = correct_predictions / total_predictions
-print("Accuracy on test set:", accuracy)
-
-# Print predicted and true classes for each image
-print("Predicted classes and true classes:")
-for predicted_class, true_class in zip(predicted_classes, true_labels):
-    print(f"Predicted: {predicted_class}, True: {class_names[true_class]}")
+print("Accuracy:", accuracy)
