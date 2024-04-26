@@ -12,6 +12,7 @@ import os
 from PIL import Image
 
 
+
 def construct_graph(features):
     # Calculate adjacency matrix based on spatial relationships (e.g., 8-connected neighbors)
     # For simplicity, let's assume a grid-like structure for pixels
@@ -155,6 +156,8 @@ else:
 
 
 
+
+
 # Define the path to the prediction images
 prediction_path = 'seg_pred'
 
@@ -178,14 +181,22 @@ for class_name in class_names:
             # Append the true label to the list of true labels
             true_labels.append(true_label)
 
-# Make predictions on the loaded images
+# Define transformations for image preprocessing
+transform = transforms.Compose([
+    transforms.Resize((150, 150)),
+    transforms.ToTensor(),
+])
+
+# Preprocess input images and convert them to tensors
+preprocessed_images = [transform(image).unsqueeze(0) for image in prediction_images]
+
+# Make predictions on the preprocessed images
 predictions = []
 model.eval()
 with torch.no_grad():
-    for image in prediction_images:
-        # Preprocess image (if necessary)
+    for image_tensor in preprocessed_images:
         # Extract features using feature extractor (if applicable)
-        features = feature_extractor(image)  # Assuming you have a feature extractor
+        features = feature_extractor(image_tensor)  # Assuming you have a feature extractor
 
         # Construct graph
         graph = construct_graph(features)
@@ -206,3 +217,4 @@ correct_predictions = sum(pred == true_label for pred, true_label in zip(predict
 total_predictions = len(prediction_images)
 accuracy = correct_predictions / total_predictions
 print("Accuracy:", accuracy)
+
