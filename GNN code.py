@@ -160,9 +160,10 @@ pred_loader = DataLoader(pred_dataset, batch_size=1, shuffle=False)
 # Make predictions
 model.eval()
 predictions = []
+true_labels = []
 
 with torch.no_grad():
-    for data, _ in pred_loader:
+    for data, labels in pred_loader:
         # Preprocess images (if necessary)
         # Extract features using feature extractor (if applicable)
         features = feature_extractor(data)  # Assuming you have a feature extractor
@@ -180,10 +181,16 @@ with torch.no_grad():
             pred = output.argmax(dim=-1).item()  # Apply argmax along the last dimension
         
         predictions.append(pred)
+        true_labels.append(labels.item())  # Convert label tensor to scalar and append to true_labels
 
 # Map predictions to corresponding class labels
-predicted_classes = [train_dataset.classes[pred] for pred in predictions]
+predicted_classes = [pred_dataset.classes[pred] for pred in predictions]
 
 # Print predicted classes
 print("Predicted classes:", predicted_classes)
 
+# Compare predicted classes with true labels
+correct_predictions = sum(pred == true_label for pred, true_label in zip(predictions, true_labels))
+total_predictions = len(pred_dataset)
+accuracy = correct_predictions / total_predictions
+print("Accuracy:", accuracy)
