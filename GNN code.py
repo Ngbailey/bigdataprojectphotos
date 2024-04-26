@@ -10,8 +10,8 @@ from torch_geometric.utils import from_networkx
 import matplotlib.pyplot as plt
 import os
 from PIL import Image
-
-
+import time
+start_time = time.time()  # Start the timer
 
 def construct_graph(features):
     # Calculate adjacency matrix based on spatial relationships (e.g., 8-connected neighbors)
@@ -158,39 +158,25 @@ else:
 
 
 
-# Define the path to the prediction images
+
+
+# Stop the timer and calculate elapsed time
+end_time = time.time()
+elapsed_time = end_time - start_time
+print("Elapsed time:", elapsed_time, "seconds")
+
+# Make predictions on unlabeled data (prediction images)
 prediction_path = 'seg_pred'
-
-# Initialize lists to store images and their corresponding labels
 prediction_images = []
-true_labels = []
 
-# Iterate over the folders in the prediction directory
-class_names = os.listdir(prediction_path)
-for class_name in class_names:
-    class_path = os.path.join(prediction_path, class_name)
-    if os.path.isdir(class_path):
-        # Get the class label from the folder name
-        true_label = class_names.index(class_name)
-        # Iterate over the images in the folder
-        for file_name in os.listdir(class_path):
-            # Load the image and append it to the list of images
-            image_path = os.path.join(class_path, file_name)
-            image = Image.open(image_path).convert('RGB')  # Ensure images are RGB
-            prediction_images.append(image)
-            # Append the true label to the list of true labels
-            true_labels.append(true_label)
+# Iterate over the files in the prediction directory
+for file_name in os.listdir(prediction_path):
+    # Load the image and append it to the list of images
+    image_path = os.path.join(prediction_path, file_name)
+    image = Image.open(image_path).convert('RGB')
+    prediction_images.append(image)
 
-# Print the true labels list
-print("True labels:", true_labels)
-
-# Define transformations for image preprocessing
-transform = transforms.Compose([
-    transforms.Resize((150, 150)),
-    transforms.ToTensor(),
-])
-
-# Preprocess input images and convert them to tensors
+# Preprocess the prediction images
 preprocessed_images = [transform(image).unsqueeze(0) for image in prediction_images]
 
 # Make predictions on the preprocessed images
@@ -198,29 +184,29 @@ predictions = []
 model.eval()
 with torch.no_grad():
     for image_tensor in preprocessed_images:
-        # Extract features using feature extractor (if applicable)
-        features = feature_extractor(image_tensor)  # Assuming you have a feature extractor
-
-        # Construct graph
+        features = feature_extractor(image_tensor)
         graph = construct_graph(features)
-
-        # Make prediction
         output = model(graph)
-        
-        # Ensure the output tensor has the expected shape
-        if len(output.shape) == 1:  # If the output tensor is 1-dimensional
-            pred = output.argmax().item()  # Apply argmax directly
-        else:
-            pred = output.argmax(dim=-1).item()  # Apply argmax along the last dimension
-        
+        pred = output.argmax().item()  # Directly get the argmax
         predictions.append(pred)
 
-# Print the predictions list
 print("Predictions:", predictions)
+# Count the occurrences of each predicted label
+label_counts = {label: predictions.count(label) for label in set(predictions)}
 
-# Compare predicted classes with true labels
-correct_predictions = sum(pred == true_label for pred, true_label in zip(predictions, true_labels))
-total_predictions = len(prediction_images)
-accuracy = correct_predictions / total_predictions
-print("Accuracy:", accuracy)
+# Calculate the total number of predictions
+total_predictions = len(predictions)
+
+# Print the label distribution
+print("Label distribution:")
+for label, count in label_counts.items():
+    print(f"Label {label}: {count} predictions, {count / total_predictions:.2%} of total")
+
+# Calculate the most frequent predicted label
+most_frequent_label = max(label_counts, key=label_counts.get)
+print("Most frequent predicted label:", most_frequent_label)
+
+# Calculate the accuracy of the most frequent predicted label
+accuracy = label_counts[most_frequent_label] / total_predictions
+print("Accuracy based on most frequent predicted label:", accuracy)
 
