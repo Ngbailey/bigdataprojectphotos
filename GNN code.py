@@ -168,6 +168,7 @@ predicted_classes = []
 
 # Iterate over the folders in the prediction directory
 class_names = os.listdir(prediction_path)
+print("Class names:", class_names)  # Print class names to check if they're loaded correctly
 for class_name in class_names:
     class_path = os.path.join(prediction_path, class_name)
     if os.path.isdir(class_path):
