@@ -184,10 +184,12 @@ with torch.no_grad():
         true_labels.append(labels.item())  # Convert label tensor to scalar and append to true_labels
 
 # Map predictions to corresponding class labels
-predicted_classes = [pred_dataset.classes[pred] for pred in predictions]
-
-# Print predicted classes
-print("Predicted classes:", predicted_classes)
+try:
+    predicted_classes = [pred_dataset.classes[pred] for pred in predictions]
+    print("Predicted classes:", predicted_classes)
+except IndexError:
+    print("Predicted indices are out of range:", predictions)
+    print("Number of classes:", len(pred_dataset.classes))
 
 # Compare predicted classes with true labels
 correct_predictions = sum(pred == true_label for pred, true_label in zip(predictions, true_labels))
