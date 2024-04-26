@@ -8,6 +8,8 @@ import torch.nn.functional as F
 import numpy as np
 from torch_geometric.utils import from_networkx
 import matplotlib.pyplot as plt
+import os
+from PIL import Image
 
 
 def construct_graph(features):
@@ -151,22 +153,39 @@ if len(output_data.shape) >= 2:  # Check if there are at least two dimensions
 else:
     print("Node features have fewer than two dimensions, unable to visualize.")
 
-# Load the prediction dataset with a custom folder structure
-pred_dataset = datasets.ImageFolder('seg_pred', transform=transform)
 
-# Define DataLoader for the prediction dataset
-pred_loader = DataLoader(pred_dataset, batch_size=1, shuffle=False)
 
-# Make predictions
-model.eval()
-predictions = []
+# Define the path to the prediction images
+prediction_path = 'seg_pred'
+
+# Initialize lists to store images and their corresponding labels
+prediction_images = []
 true_labels = []
 
+# Iterate over the folders in the prediction directory
+class_names = os.listdir(prediction_path)
+for class_name in class_names:
+    class_path = os.path.join(prediction_path, class_name)
+    if os.path.isdir(class_path):
+        # Get the class label from the folder name
+        true_label = class_names.index(class_name)
+        # Iterate over the images in the folder
+        for file_name in os.listdir(class_path):
+            # Load the image and append it to the list of images
+            image_path = os.path.join(class_path, file_name)
+            image = Image.open(image_path).convert('RGB')  # Ensure images are RGB
+            prediction_images.append(image)
+            # Append the true label to the list of true labels
+            true_labels.append(true_label)
+
+# Make predictions on the loaded images
+predictions = []
+model.eval()
 with torch.no_grad():
-    for data, labels in pred_loader:
-        # Preprocess images (if necessary)
+    for image in prediction_images:
+        # Preprocess image (if necessary)
         # Extract features using feature extractor (if applicable)
-        features = feature_extractor(data)  # Assuming you have a feature extractor
+        features = feature_extractor(image)  # Assuming you have a feature extractor
 
         # Construct graph
         graph = construct_graph(features)
@@ -181,19 +200,9 @@ with torch.no_grad():
             pred = output.argmax(dim=-1).item()  # Apply argmax along the last dimension
         
         predictions.append(pred)
-        true_labels.append(labels.item())  # Convert label tensor to scalar and append to true_labels
-
-# Map predictions to corresponding class labels
-try:
-    predicted_classes = [pred_dataset.classes[pred] for pred in predictions]
-    print("Predicted classes:", predicted_classes)
-except IndexError:
-    print("Predicted indices are out of range:", predictions)
-    print("Number of classes:", len(pred_dataset.classes))
 
 # Compare predicted classes with true labels
 correct_predictions = sum(pred == true_label for pred, true_label in zip(predictions, true_labels))
-total_predictions = len(pred_dataset)
+total_predictions = len(prediction_images)
 accuracy = correct_predictions / total_predictions
 print("Accuracy:", accuracy)
-
