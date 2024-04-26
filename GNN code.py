@@ -106,6 +106,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 # Training loop
+train_outputs = [] # List to store the outputs for training data
 num_epochs = 5  # Define number of epochs
 for epoch in range(num_epochs):
     model.train()
@@ -116,6 +117,7 @@ for epoch in range(num_epochs):
         # Construct graph (for simplicity, not implemented here)
         graph = construct_graph(features)# Construct graph from features
         output = model(graph)
+        train_outputs.append(output.detach().numpy())
         loss = criterion(output.unsqueeze(0), labels)
         loss.backward()
         optimizer.step()
@@ -215,6 +217,7 @@ for label, count in label_counts.items():
 # Calculate the most frequent predicted label
 most_frequent_label = max(label_counts, key=label_counts.get)
 print("Most frequent predicted label:", most_frequent_label)
+
 
 
 
