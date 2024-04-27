@@ -257,3 +257,26 @@ total_predictions = len(true_labels)
 accuracy = correct_predictions / total_predictions
 
 print("Accuracy:", accuracy)
+
+# Define a function to extract adjacency matrix from edge indices
+def extract_adjacency(edge_index, num_nodes):
+    adjacency = torch.zeros((num_nodes, num_nodes), dtype=torch.float)
+    for i in range(edge_index.size(1)):
+        src, dest = edge_index[0, i], edge_index[1, i]
+        adjacency[src, dest] = 1
+        adjacency[dest, src] = 1  # Assuming undirected graph
+    return adjacency
+
+# Assuming `output` contains the output of the GCN model
+output_data = output.detach().numpy()  # Convert PyTorch tensor to NumPy array
+
+# Assuming `graph` contains the graph data used by the model
+edge_index = graph.edge_index
+num_nodes = graph.num_nodes
+
+# Extract adjacency matrix
+adjacency_matrix = extract_adjacency(edge_index, num_nodes)
+
+# Print or visualize the adjacency matrix
+print("Adjacency matrix:")
+print(adjacency_matrix)
