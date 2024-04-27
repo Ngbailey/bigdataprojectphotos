@@ -151,21 +151,45 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
 
+
+# Define a function to extract adjacency matrix from edge indices
+def extract_adjacency(edge_index, num_nodes):
+    adjacency = torch.zeros((num_nodes, num_nodes), dtype=torch.float)
+    for i in range(edge_index.size(1)):
+        src, dest = edge_index[0, i].item(), edge_index[1, i].item()
+        adjacency[src, dest] = 1
+        adjacency[dest, src] = 1  # Assuming undirected graph
+    return adjacency
+
+
 # Evaluation on test set
 model.eval()
 total_correct = 0
 total_samples = 0
+adjacency_matrices = []  # List to store adjacency matrices
 with torch.no_grad():
     for data, labels in test_loader:
         features = feature_extractor(data)
-        graph = construct_graph(features) # Construct graph from features
+        graph = construct_graph(features)  # Construct graph from features
         output = model(graph)
         pred = output.argmax(dim=0)
         total_correct += (pred == labels).sum().item()
         total_samples += len(labels)
+        
+        # Extract adjacency matrix
+        edge_index = graph.edge_index
+        num_nodes = graph.num_nodes
+        adjacency_matrix = extract_adjacency(edge_index, num_nodes)
+        adjacency_matrices.append(adjacency_matrix)
 
 accuracy = total_correct / total_samples
 print("Accuracy on test set:", accuracy)
+
+# Print the adjacency matrices
+for i, adjacency_matrix in enumerate(adjacency_matrices):
+    print(f"Adjacency matrix {i+1}:")
+    print(adjacency_matrix)
+
 
 
 # Assuming `output` contains the output of the GCN model
@@ -259,14 +283,6 @@ accuracy = correct_predictions / total_predictions
 print("Accuracy:", accuracy)
 
 
-# Define a function to extract adjacency matrix from edge indices
-def extract_adjacency(edge_index, num_nodes):
-    adjacency = torch.zeros((num_nodes, num_nodes), dtype=torch.float)
-    for i in range(edge_index.size(1)):
-        src, dest = edge_index[0, i].item(), edge_index[1, i].item()
-        adjacency[src, dest] = 1
-        adjacency[dest, src] = 1  # Assuming undirected graph
-    return adjacency
 
 # Assuming `graph` contains the graph data used by the model
 edge_index = graph.edge_index
