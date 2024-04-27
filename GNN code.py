@@ -14,7 +14,7 @@ import time
 import random
 
 # Set seed for Python's built-in random module
-random_seed = 42
+random_seed = 1362
 random.seed(random_seed)
 
 # Set seed for NumPy
@@ -27,6 +27,15 @@ torch.cuda.manual_seed_all(random_seed)  # if you are using multiple GPUs
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False  # Set to False if your input sizes are variable
 
+# Define a function to extract adjacency matrix from edge indices
+def extract_adjacency(edge_index, num_nodes):
+    adjacency = torch.zeros((num_nodes, num_nodes), dtype=torch.float)
+    for i in range(edge_index.size(1)):
+        src, dest = edge_index[0, i].item(), edge_index[1, i].item()
+        adjacency[src, dest] = 1
+        adjacency[dest, src] = 1  # Assuming undirected graph
+
+    return adjacency
 
 start_time = time.time()  # Start the timer
 
@@ -63,6 +72,8 @@ def construct_graph(features):
 
     # Create a Data object from node features and edge index
     data = Data(x=torch.tensor(features, dtype=torch.float), edge_index=edge_index)
+
+    
 
     return data
 
@@ -106,6 +117,9 @@ test_dataset = datasets.ImageFolder('seg_test/seg_test', transform=transform)
 train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 
+
+
+
 # Define a simple feature extractor (fully connected layer)
 class FeatureExtractor(nn.Module):
     def __init__(self, input_dim, output_dim):
@@ -134,6 +148,18 @@ model = GCN(input_dim, hidden_dim, output_dim, weight_decay)
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
+# Check data loading and feature extraction
+for i in range(5):  # Print features of the first 5 images
+    sample_data, sample_labels = next(iter(train_loader))
+    sample_features = feature_extractor(sample_data)
+    print("Sample Image Shape:", sample_data.shape)
+    print("Sample Features Shape:", sample_features.shape)
+    # Print the first few features
+    print("Sample Features:", sample_features[0, :10])  # Print the first 10 features
+    # Optionally, visualize the sample image
+    plt.imshow(sample_data.squeeze().permute(1, 2, 0))
+    plt.show()
+
 # Training loop
 train_outputs = [] # List to store the outputs for training data
 num_epochs = 5  # Define number of epochs
@@ -152,14 +178,9 @@ for epoch in range(num_epochs):
         optimizer.step()
 
 
-# Define a function to extract adjacency matrix from edge indices
-def extract_adjacency(edge_index, num_nodes):
-    adjacency = torch.zeros((num_nodes, num_nodes), dtype=torch.float)
-    for i in range(edge_index.size(1)):
-        src, dest = edge_index[0, i].item(), edge_index[1, i].item()
-        adjacency[src, dest] = 1
-        adjacency[dest, src] = 1  # Assuming undirected graph
-    return adjacency
+
+
+
 
 
 # Evaluation on test set
@@ -185,10 +206,7 @@ with torch.no_grad():
 accuracy = total_correct / total_samples
 print("Accuracy on test set:", accuracy)
 
-# Print the adjacency matrices
-for i, adjacency_matrix in enumerate(adjacency_matrices):
-    print(f"Adjacency matrix {i+1}:")
-    print(adjacency_matrix)
+
 
 
 
@@ -199,15 +217,7 @@ output_data = output.detach().numpy()  # Convert PyTorch tensor to NumPy array
 print("Shape of output_data:", output_data.shape)
 print("Contents of output_data:", output_data)
 
-# Visualize the first two dimensions of the node features (assuming output_data has shape [num_nodes, feature_dim])
-if len(output_data.shape) >= 2:  # Check if there are at least two dimensions
-    plt.scatter(output_data[:, 0], output_data[:, 1])  # Scatter plot of the first two dimensions
-    plt.xlabel('Feature 1')
-    plt.ylabel('Feature 2')
-    plt.title('Node Features Visualization')
-    plt.show()
-else:
-    print("Node features have fewer than two dimensions, unable to visualize.")
+
 
 
 
