@@ -51,18 +51,23 @@ def construct_graph(features):
 
 
 
-# Define the GCN model
+# Define the GCN model with dropout regularization
 class GCN(nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim):
+    def __init__(self, input_dim, hidden_dim, output_dim, dropout):
         super(GCN, self).__init__()
         self.conv1 = GCNConv(input_dim, hidden_dim)
+        self.dropout1 = nn.Dropout(dropout)
         self.conv2 = GCNConv(hidden_dim, output_dim)
+        self.dropout2 = nn.Dropout(dropout)
 
     def forward(self, data):
         x, edge_index = data.x, data.edge_index
         x = self.conv1(x, edge_index)
-        x = torch.relu(x)
+        x = F.relu(x)
+        x = self.dropout1(x)  # Apply dropout after the first convolutional layer
         x = self.conv2(x, edge_index)
+        x = F.relu(x)
+        x = self.dropout2(x)  # Apply dropout after the second convolutional layer
         return torch.mean(x, dim=0)  # Pooling to get a graph-level representation
 
 # Define transformations for image preprocessing
@@ -95,11 +100,12 @@ image_dim = 150 * 150 * 3  # Flatten image size (150x150x3)
 feature_dim = 64  # Dimensionality of the extracted features
 feature_extractor = FeatureExtractor(image_dim, feature_dim)
 
-# Instantiate the GCN model
+# Instantiate the GCN model with dropout regularization
 input_dim = feature_dim  # Use the output dimension of the feature extractor as input to GCN
 hidden_dim = 64
 output_dim = 6  # Number of categories
-model = GCN(input_dim, hidden_dim, output_dim)
+dropout = 0.5  # Dropout probability
+model = GCN(input_dim, hidden_dim, output_dim, dropout)
 
 # Define loss function and optimizer
 criterion = nn.CrossEntropyLoss()
