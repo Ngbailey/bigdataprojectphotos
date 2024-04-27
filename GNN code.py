@@ -168,7 +168,7 @@ elapsed_time = end_time - start_time
 print("Elapsed time:", elapsed_time, "seconds")
 
 # Make predictions on unlabeled data (prediction images)
-prediction_path = 'seg_pred/seg_pred'
+prediction_path = 'pred_small'
 prediction_images = []
 
 # Iterate over the files in the prediction directory
@@ -220,5 +220,11 @@ print("Most frequent predicted label:", most_frequent_label)
 
 
 
+true_labels = [5, 0, 4, 2, 5, 1, 4, 3, 3, 2, 2, 3, 0, 4, 1, 5, 3, 5, 0, 3, 1, 5, 3, 3, 1, 5, 1, 2, 0, 3, 5, 3, 5, 0, 2, 2, 4, 4, 0, 3, 0, 5, 2, 0, 0, 1, 1, 0, 4, 5, 4, 1, 3, 2, 3, 5, 1, 3, 3, 1, 0, 4, 5, 3, 2, 0, 3, 4, 4, 3, 3, 0, 0, 3, 3, 3, 5, 2, 1, 4, 0, 5, 4, 3, 0, 3, 3, 2, 3, 5, 5, 3, 3, 1, 4, 2, 3, 3, 0, 0, 3, 0, 2, 3, 3, 1, 5, 5, 3, 3, 0, 0, 1, 1, 4, 3, 2, 4, 2, 3, 2, 3, 4, 3, 3, 3, 4, 4, 1, 3, 1, 1, 3, 0, 1, 3, 5, 2, 1, 3, 2, 4, 2, 3, 1, 3, 5, 2, 2, 1, 5, 5, 3, 0, 3, 3, 4, 4, 2, 2, 4, 0, 0, 1, 2, 5, 1, 1, 3, 1, 1, 4, 4, 5, 1, 4, 2, 4, 1, 5, 1, 1, 2, 0, 3, 2, 0, 3, 0, 1, 5, 5, 0, 1, 3, 3, 3, 4, 3, 4, 3, 0, 3, 5, 5, 5, 3, 1, 1, 0, 0, 1, 3, 3, 2, 5]
 
+# Calculate the accuracy
+correct_predictions = sum(1 for pred, true_label in zip(predictions, true_labels) if pred == true_label)
+total_predictions = len(true_labels)
+accuracy = correct_predictions / total_predictions
 
+print("Accuracy:", accuracy)
