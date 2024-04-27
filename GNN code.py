@@ -51,24 +51,29 @@ def construct_graph(features):
 
 
 
-# Define the GCN model with dropout regularization
+
+
+# Define the GCN model with L2 regularization
 class GCN(nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim, dropout):
+    def __init__(self, input_dim, hidden_dim, output_dim, weight_decay):
         super(GCN, self).__init__()
         self.conv1 = GCNConv(input_dim, hidden_dim)
-        self.dropout1 = nn.Dropout(dropout)
         self.conv2 = GCNConv(hidden_dim, output_dim)
-        self.dropout2 = nn.Dropout(dropout)
+
+        # Define L2 regularization term
+        self.weight_decay = weight_decay
 
     def forward(self, data):
         x, edge_index = data.x, data.edge_index
         x = self.conv1(x, edge_index)
         x = F.relu(x)
-        x = self.dropout1(x)  # Apply dropout after the first convolutional layer
         x = self.conv2(x, edge_index)
-        x = F.relu(x)
-        x = self.dropout2(x)  # Apply dropout after the second convolutional layer
-        return torch.mean(x, dim=0)  # Pooling to get a graph-level representation
+
+        # Calculate L2 regularization term
+        l2_reg = self.weight_decay * sum(param.pow(2).sum() for param in self.parameters())
+
+        return torch.mean(x, dim=0) - 0.5 * l2_reg  # Add L2 regularization term to the output
+
 
 # Define transformations for image preprocessing
 transform = transforms.Compose([
@@ -100,12 +105,13 @@ image_dim = 150 * 150 * 3  # Flatten image size (150x150x3)
 feature_dim = 64  # Dimensionality of the extracted features
 feature_extractor = FeatureExtractor(image_dim, feature_dim)
 
-# Instantiate the GCN model with dropout regularization
+# Instantiate the GCN model with L2 regularization
 input_dim = feature_dim  # Use the output dimension of the feature extractor as input to GCN
 hidden_dim = 64
 output_dim = 6  # Number of categories
-dropout = 0.5  # Dropout probability
-model = GCN(input_dim, hidden_dim, output_dim, dropout)
+weight_decay = 1e-4  # Strength of L2 regularization
+model = GCN(input_dim, hidden_dim, output_dim, weight_decay)
+
 
 # Define loss function and optimizer
 criterion = nn.CrossEntropyLoss()
