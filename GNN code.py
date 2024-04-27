@@ -11,6 +11,23 @@ import matplotlib.pyplot as plt
 import os
 from PIL import Image
 import time
+import random
+
+# Set seed for Python's built-in random module
+random_seed = 42
+random.seed(random_seed)
+
+# Set seed for NumPy
+np.random.seed(random_seed)
+
+# Set seed for PyTorch
+torch.manual_seed(random_seed)
+torch.cuda.manual_seed(random_seed)
+torch.cuda.manual_seed_all(random_seed)  # if you are using multiple GPUs
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False  # Set to False if your input sizes are variable
+
+
 start_time = time.time()  # Start the timer
 
 def construct_graph(features):
