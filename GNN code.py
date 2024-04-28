@@ -23,9 +23,9 @@ np.random.seed(random_seed)
 # Set seed for PyTorch
 torch.manual_seed(random_seed)
 torch.cuda.manual_seed(random_seed)
-torch.cuda.manual_seed_all(random_seed)  # if you are using multiple GPUs
+torch.cuda.manual_seed_all(random_seed)  
 torch.backends.cudnn.deterministic = True
-torch.backends.cudnn.benchmark = False  # Set to False if your input sizes are variable
+torch.backends.cudnn.benchmark = False  
 
 # Define a function to extract adjacency matrix from edge indices
 def extract_adjacency(edge_index, num_nodes):
