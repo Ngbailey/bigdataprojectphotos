@@ -41,8 +41,8 @@ start_time = time.time()  # Start the timer
 
 def construct_graph(features):
     # Calculate adjacency matrix based on spatial relationships (e.g., 8-connected neighbors)
-    # For simplicity, let's assume a grid-like structure for pixels
-    image_size = int(np.sqrt(features.shape[0] / 3))  # Assuming RGB images
+    # Grid-like structure for pixels
+    image_size = int(np.sqrt(features.shape[0] / 3))  # RGB images
     adj_matrix = np.zeros((image_size * image_size, image_size * image_size))
     for i in range(image_size):
         for j in range(image_size):
@@ -210,7 +210,6 @@ print("Accuracy on test set:", accuracy)
 
 
 
-# Assuming `output` contains the output of the GCN model
 output_data = output.detach().numpy()  # Convert PyTorch tensor to NumPy array
 
 # Check the shape and contents of the output_data array
@@ -225,7 +224,7 @@ print("Contents of output_data:", output_data)
 
 
 
-# Stop the timer and calculate elapsed time
+# Stop the timer and calculate elapsed time just wanted to see how long it would take to do training/testing
 end_time = time.time()
 elapsed_time = end_time - start_time
 print("Elapsed time:", elapsed_time, "seconds")
@@ -282,7 +281,7 @@ most_frequent_label = max(label_counts, key=label_counts.get)
 print("Most frequent predicted label:", most_frequent_label)
 
 
-#manually created true labels to test prediction
+# Manually created true labels to test prediction
 true_labels = [5, 0, 4, 2, 5, 1, 4, 3, 3, 2, 2, 3, 0, 4, 1, 5, 3, 5, 0, 3, 1, 5, 3, 3, 1, 5, 1, 2, 0, 3, 5, 3, 5, 0, 2, 2, 4, 4, 0, 3, 0, 5, 2, 0, 0, 1, 1, 0, 4, 5, 4, 1, 3, 2, 3, 5, 1, 3, 3, 1, 0, 4, 5, 3, 2, 0, 3, 4, 4, 3, 3, 0, 0, 3, 3, 3, 5, 2, 1, 4, 0, 5, 4, 3, 0, 3, 3, 2, 3, 5, 5, 3, 3, 1, 4, 2, 3, 3, 0, 0, 3, 0, 2, 3, 3, 1, 5, 5, 3, 3, 0, 0, 1, 1, 4, 3, 2, 4, 2, 3, 2, 3, 4, 3, 3, 3, 4, 4, 1, 3, 1, 1, 3, 0, 1, 3, 5, 2, 1, 3, 2, 4, 2, 3, 1, 3, 5, 2, 2, 1, 5, 5, 3, 0, 3, 3, 4, 4, 2, 2, 4, 0, 0, 1, 2, 5, 1, 1, 3, 1, 1, 4, 4, 5, 1, 4, 2, 4, 1, 5, 1, 1, 2, 0, 3, 2, 0, 3, 0, 1, 5, 5, 0, 1, 3, 3, 3, 4, 3, 4, 3, 0, 3, 5, 5, 5, 3, 1, 1, 0, 0, 1, 3, 3, 2, 5]
 
 # Calculate the accuracy
@@ -294,13 +293,3 @@ print("Accuracy:", accuracy)
 
 
 
-# Assuming `graph` contains the graph data used by the model
-edge_index = graph.edge_index
-num_nodes = graph.num_nodes
-
-# Extract adjacency matrix
-adjacency_matrix = extract_adjacency(edge_index, num_nodes)
-
-# Print or visualize the adjacency matrix
-print("Adjacency matrix:")
-print(adjacency_matrix)
