@@ -162,14 +162,12 @@ for i in range(5):  # Print features of the first 5 images
 
 # Training loop
 train_outputs = [] # List to store the outputs for training data
-num_epochs = 5  # Define number of epochs
+num_epochs = 150  # Define number of epochs
 for epoch in range(num_epochs):
     model.train()
     for data, labels in train_loader:
         optimizer.zero_grad()
-        # Extract features from images using the feature extractor
-        features = feature_extractor(data)
-        # Construct graph (for simplicity, not implemented here)
+        features = feature_extractor(data)# Extract features from images using the feature extractor
         graph = construct_graph(features)# Construct graph from features
         output = model(graph)
         train_outputs.append(output.detach().numpy())
