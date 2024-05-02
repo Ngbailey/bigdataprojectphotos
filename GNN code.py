@@ -162,7 +162,7 @@ for i in range(5):  # Print features of the first 5 images
 
 # Training loop
 train_outputs = [] # List to store the outputs for training data
-num_epochs = 150  # Define number of epochs
+num_epochs = 15  # Define number of epochs
 for epoch in range(num_epochs):
     model.train()
     for data, labels in train_loader:
